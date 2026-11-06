@@ -95,3 +95,38 @@ document.querySelectorAll('.offer-link[data-query]').forEach(a => {
 
 // Keep editorial guide outbound links aligned with the selected marketplace.
 function updateOfferLinks(){document.querySelectorAll('.offer-link[data-query]').forEach(a=>{a.href=amazonSearchUrl(a.dataset.query);a.rel=(TAGS[marketSelect?.value||'AE']?'sponsored ':'')+'nofollow noopener';});}
+
+
+// Contextual, non-affiliate next step on editorial guide pages.
+(function addDecisionLabNextStep(){
+  const categoryByGuide={
+    'guide-wireless-headphones.html':'headphones',
+    'guide-smart-watches.html':'watches',
+    'guide-running-shoes.html':'shoes',
+    'guide-power-banks.html':'powerbanks',
+    'guide-robot-vacuums.html':'vacuums',
+    'guide-air-fryers.html':'airfryers',
+    'guide-laptops.html':'laptops',
+    'guide-mesh-wifi.html':'mesh',
+    'guide-portable-ssds.html':'ssds',
+    'guide-office-chairs.html':'chairs',
+    'guide-monitors.html':'monitors',
+    'guide-tablets.html':'tablets',
+    'guide-coffee-makers.html':'coffee',
+    'guide-coffee-machines.html':'coffee',
+    'guide-carry-on-luggage.html':'luggage',
+    'guide-cordless-drills.html':'drills'
+  };
+  const path=location.pathname.split('/').pop();
+  const category=categoryByGuide[path];
+  const main=document.querySelector('main');
+  if(!category||!main||document.getElementById('guide-decision-next'))return;
+  const section=document.createElement('section');
+  section.className='panel guide-next-step';
+  section.id='guide-decision-next';
+  const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='YOUR NEXT STEP';
+  const heading=document.createElement('h2');heading.textContent='Compare your shortlisted products';
+  const copy=document.createElement('p');copy.textContent='Use the free Decision Lab to weight features, enter verified ratings and estimate costs for up to three options. No live prices or product testing are claimed.';
+  const link=document.createElement('a');link.className='btn primary';link.href='decision-lab.html?category='+encodeURIComponent(category);link.textContent='Compare options in Decision Lab';
+  section.append(eyebrow,heading,copy,link);main.append(section);
+})();
