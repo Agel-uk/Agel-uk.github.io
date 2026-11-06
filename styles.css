@@ -83,3 +83,12 @@
 .home-redesign .home-feature-wifi .home-feature-icon{background:#f0edff}
 @media(max-width:900px){.home-redesign .home-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.home-redesign .home-feature-grid{grid-template-columns:1fr}.home-redesign .home-feature-card{padding:20px}.home-redesign .home-feature-card h3{font-size:20px}}
+
+/* Search all sixteen US guide categories with immediate feedback. */
+.home-redesign #search .searchbar{margin:18px 0 10px}
+.home-redesign #search .searchbar input[type="search"]{flex:2;min-width:min(100%,280px)}
+.home-redesign #search .search-feedback{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;color:#475467;font-size:13px}
+.home-redesign #resultCount{font-weight:800;color:#1d4ed8}
+.home-redesign #search .card .card-actions{margin-top:auto}
+.home-redesign #search .card .btn.primary{background:#1d4ed8;border-color:#1d4ed8}
+@media(max-width:620px){.home-redesign #search .searchbar{display:grid;grid-template-columns:1fr}.home-redesign #search .searchbar>*{width:100%;min-width:0}}
