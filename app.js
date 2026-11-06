@@ -54,6 +54,7 @@ const SEARCH_ALIASES = {
   'guide-carry-on-luggage.html':'suitcase cabin bag travel',
   'guide-cordless-drills.html':'power drill diy tools'
 };
+let showAllGuides=false;
 function search(){
   const raw=(q?.value||'').trim().toLowerCase();
   const terms=raw.split(/\s+/).filter(Boolean);
@@ -68,12 +69,14 @@ function search(){
     },0);
     return {x,i,score};
   }).filter(x=>!terms.length||x.score>=0).sort((a,b)=>b.score-a.score||a.i-b.i);
-  render(ranked.map(x=>x.x));
+  const visible=(!raw&&!showAllGuides)?ranked.slice(0,6):ranked;
+  render(visible.map(x=>x.x));
+  const more=$('showAllGuides');if(more){more.hidden=Boolean(raw)||ranked.length<=6||showAllGuides;more.textContent=`Show all ${ranked.length} buying guides`;}
   const count=$('resultCount');
-  if(count)count.textContent=ranked.length===1?'1 matching buying guide':`${ranked.length} matching buying guides`;
+  if(count)count.textContent=(!raw&&!showAllGuides&&ranked.length>6)?`Showing 6 of ${ranked.length} buying guides`:(ranked.length===1?'1 matching buying guide':`${ranked.length} matching buying guides`);
   if(results&&!ranked.length)results.innerHTML='<p role="status">No matching buying guides. Try a shorter term, such as laptop, coffee, or vacuum, or browse all 16 guides.</p>';
 }
-$('searchBtn')?.addEventListener('click',search);q?.addEventListener('keydown',e=>{if(e.key==='Enter')search()});q?.addEventListener('input',search);document.querySelectorAll('[data-guide-search]').forEach(button=>button.addEventListener('click',()=>{if(!q)return;q.value=button.dataset.guideSearch;search();q.focus();}));marketSelect?.addEventListener('change',()=>{syncCurrency();search();updateOfferLinks()});currency?.addEventListener('change',search);
+$('searchBtn')?.addEventListener('click',search);q?.addEventListener('keydown',e=>{if(e.key==='Enter')search()});q?.addEventListener('input',search);$('showAllGuides')?.addEventListener('click',()=>{showAllGuides=true;search();});document.querySelectorAll('[data-guide-search]').forEach(button=>button.addEventListener('click',()=>{if(!q)return;q.value=button.dataset.guideSearch;search();q.focus();}));marketSelect?.addEventListener('change',()=>{syncCurrency();search();updateOfferLinks()});currency?.addEventListener('change',search);
 syncCurrency();search();
 const photo=$('photo'),preview=$('preview');photo?.addEventListener('change',()=>{const f=photo.files?.[0];if(f){preview.src=URL.createObjectURL(f);preview.hidden=false;}});
 $('listingBtn')?.addEventListener('click',()=>{const n=$('sellName').value.trim()||'Product';const c=$('condition').value;$('listing').textContent=`${n}\nCondition: ${c}\n\nSuggested title: ${n} — ${c}\nDescription: ${n} offered in ${c.toLowerCase()} condition. Confirm specifications, defects, delivery and warranty before publishing.\n\nAI image recognition is not enabled until an approved server-side AI provider is connected.`});
