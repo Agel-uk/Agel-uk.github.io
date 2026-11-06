@@ -40,7 +40,7 @@ const SEARCH_ALIASES = {
   'guide-wireless-headphones.html':'earbuds headset noise cancelling anc bluetooth calls',
   'guide-robot-vacuums.html':'robotic vacuum pet hair cleaning mop',
   'guide-mesh-wifi.html':'wireless router internet coverage networking',
-  'guide-laptops.html':'notebook computer macbook windows',
+  'guide-laptops.html':'work school notebook computer macbook windows',
   'guide-power-banks.html':'portable charger battery usb c travel',
   'guide-portable-ssds.html':'external hard drive storage backup',
   'guide-smart-watches.html':'smartwatch fitness wearable',
@@ -64,7 +64,7 @@ function search(){
       if(name===term)return sum+12;
       if(name.includes(term))return sum+8;
       if(query.includes(term))return sum+5;
-      if(aliases.includes(term))return sum+2;
+      if(aliases.split(/\s+/).some(word=>word===term||word.startsWith(term)))return sum+2;
       return sum-100;
     },0);
     return {x,i,score};
