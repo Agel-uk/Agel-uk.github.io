@@ -92,3 +92,9 @@
 .home-redesign #search .card .card-actions{margin-top:auto}
 .home-redesign #search .card .btn.primary{background:#1d4ed8;border-color:#1d4ed8}
 @media(max-width:620px){.home-redesign #search .searchbar{display:grid;grid-template-columns:1fr}.home-redesign #search .searchbar>*{width:100%;min-width:0}}
+
+/* Quick search suggestions improve discovery without relying on a backend. */
+.home-redesign .search-examples{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 14px;font-size:13px;color:#475467}
+.home-redesign .search-examples button{font:inherit;font-weight:750;border:1px solid #c7d7f1;background:#eff6ff;color:#1e40af;border-radius:999px;padding:8px 13px;cursor:pointer;min-height:38px}
+.home-redesign .search-examples button:hover{background:#dbeafe}
+.home-redesign .search-examples button:focus-visible{outline:3px solid #60a5fa;outline-offset:2px}
