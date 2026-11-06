@@ -67,3 +67,19 @@
 .guide-aside a[href*="amazon.com"]{background:#dbeafe;color:#0f2f62;border-color:#93c5fd}
 .guide-aside a[href*="amazon.com"]:hover{background:#bfdbfe}
 @media(max-width:620px){.guide-quick-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.guide-quick-nav span{grid-column:1/-1}.guide-quick-nav a{justify-content:center;text-align:center;padding:9px 8px}.guide-content section{padding:18px}}
+
+/* Homepage featured buying guides: scannable category cards, no unverified product imagery. */
+.home-redesign .home-feature-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.home-redesign .home-feature-card{padding:24px;gap:14px;background:linear-gradient(160deg,#fff 0%,#f8fbff 100%);border-color:#d8e4f5}
+.home-redesign .home-feature-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.home-redesign .home-feature-icon{width:56px;height:56px;display:grid;place-items:center;border-radius:16px;background:#e8f0ff;font-size:29px}
+.home-redesign .home-feature-category{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:850;color:#315c9e;text-align:right}
+.home-redesign .home-feature-card h3{font-size:22px;line-height:1.25;letter-spacing:-.025em}
+.home-redesign .home-feature-card p{margin:0}
+.home-redesign .home-feature-card>.btn{margin-top:auto;background:#1d4ed8;border-color:#1d4ed8;color:#fff;text-align:center;min-height:45px;display:flex;align-items:center;justify-content:center}
+.home-redesign .home-feature-card>.btn:hover{background:#1e40af}
+.home-redesign .home-feature-card p:last-child a{display:inline-flex;align-items:center;min-height:40px;font-weight:750;text-underline-offset:3px}
+.home-redesign .home-feature-vacuums .home-feature-icon{background:#e9f8f1}
+.home-redesign .home-feature-wifi .home-feature-icon{background:#f0edff}
+@media(max-width:900px){.home-redesign .home-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.home-redesign .home-feature-grid{grid-template-columns:1fr}.home-redesign .home-feature-card{padding:20px}.home-redesign .home-feature-card h3{font-size:20px}}
