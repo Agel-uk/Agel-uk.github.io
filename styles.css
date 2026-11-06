@@ -98,3 +98,10 @@
 .home-redesign .search-examples button{font:inherit;font-weight:750;border:1px solid #c7d7f1;background:#eff6ff;color:#1e40af;border-radius:999px;padding:8px 13px;cursor:pointer;min-height:38px}
 .home-redesign .search-examples button:hover{background:#dbeafe}
 .home-redesign .search-examples button:focus-visible{outline:3px solid #60a5fa;outline-offset:2px}
+
+/* Progressive disclosure keeps homepage browsing compact while retaining all guides. */
+.home-redesign .search-more{display:flex;justify-content:center;margin:22px 0 4px}
+.home-redesign .search-more button{font:inherit;font-weight:800;color:#174ea6;background:#eff6ff;border:1px solid #b7d0f5;border-radius:12px;padding:13px 22px;min-height:46px;cursor:pointer}
+.home-redesign .search-more button:hover{background:#dbeafe}
+.home-redesign .search-more button:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
+.home-redesign .search-more button[hidden]{display:none}
