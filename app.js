@@ -56,7 +56,7 @@ const SEARCH_ALIASES = {
 };
 function search(){
   const raw=(q?.value||'').trim().toLowerCase();
-  const terms=raw.split(/\\s+/).filter(Boolean);
+  const terms=raw.split(/\s+/).filter(Boolean);
   const ranked=demo.map((x,i)=>{
     const name=x.name.toLowerCase(), query=x.query.toLowerCase(), aliases=SEARCH_ALIASES[x.guide]||'';
     const score=terms.reduce((sum,term)=>{
