@@ -105,3 +105,11 @@
 .home-redesign .search-more button:hover{background:#dbeafe}
 .home-redesign .search-more button:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
 .home-redesign .search-more button[hidden]{display:none}
+
+/* Guide-to-comparison journey: shared across editorial buying guides. */
+.guide-next-step{margin:24px auto;padding:26px;border:1px solid #b9d2f7;border-radius:18px;background:linear-gradient(120deg,#eff6ff,#fff);max-width:1100px}
+.guide-next-step h2{margin:8px 0 10px;color:#102b52}
+.guide-next-step p:not(.eyebrow){max-width:760px;line-height:1.6;color:#344054}
+.guide-next-step .btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;margin-top:10px;text-align:center}
+.guide-next-step .btn:focus-visible{outline:3px solid #60a5fa;outline-offset:3px}
+@media(max-width:620px){.guide-next-step{padding:20px}.guide-next-step .btn{width:100%;white-space:normal}}
