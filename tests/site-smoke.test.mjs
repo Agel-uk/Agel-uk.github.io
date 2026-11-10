@@ -60,7 +60,8 @@ test('US drill buyer journey has working local steps and disclosed tracked retai
  assert.match(drill,/id="household-drill-checklist"/);
  assert.match(drill,/id="drill-real-questions"/);
  assert.match(home,/href="guide-cordless-drills\.html#household-drill-checklist"/);
- assert.match(home,/href="guide-cordless-drills\.html#drill-real-questions"/);
+ assert.match(home,/href="guide-cordless-drills\.html#us-drill-scenarios"/);
+ assert.match(drill,/id="us-drill-scenarios"/);
  assert.match(home,/www\.amazon\.com\/s\?k=cordless%20drill%20driver%20kit&amp;tag=deallensai-20/);
  assert.match(home,/rel="sponsored nofollow noopener"/);
  assert.match(home,/Affiliate link:/);
