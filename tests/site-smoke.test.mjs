@@ -88,3 +88,25 @@ test('mesh rental comparison and homepage calculator links exist',()=>{
  assert.match(mesh,/addEventListener\('input',calculate\)/);
  for(const anchor of ['drill-kit-cost-calculator','laptop-ownership-calculator','mesh-rent-buy-calculator'])assert.ok(home.includes('#'+anchor),'missing calculator link: '+anchor);
 });
+
+test('calculator scripts compute correct totals and reject invalid input',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const cases=[
+  {file:'guide-cordless-drills.html',result:'drill-cost-result',inputs:{'drill-a-tool':'75','drill-a-power':'0','drill-a-extras':'15','drill-b-tool':'60','drill-b-power':'55','drill-b-extras':'15','drill-tax':'0'},expected:['Option A: $90.00','Option B: $130.00'],invalid:'drill-tax'},
+  {file:'guide-laptops.html',result:'laptop-ownership-result',inputs:{'laptop-a-price':'650','laptop-a-upgrade':'120','laptop-a-extra':'70','laptop-b-price':'790','laptop-b-upgrade':'0','laptop-b-extra':'0','laptop-sales-tax':'0'},expected:['Laptop A: $840.00','Laptop B: $790.00'],invalid:'laptop-sales-tax'},
+  {file:'guide-mesh-wifi.html',result:'mesh-rent-buy-result',inputs:{'mesh-monthly-rent':'12','mesh-isp-setup':'0','mesh-purchase':'240','mesh-install':'0','mesh-months':'24'},expected:['Rent: $288.00','Own: $240.00'],invalid:'mesh-months'}
+ ];
+ for(const c of cases){
+  const html=read(c.file);
+  const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]);
+  const script=scripts.find(s=>s.includes("addEventListener('input',calculate)"));
+  assert.ok(script,c.file+' calculator script missing');
+  const elements=Object.fromEntries(Object.entries(c.inputs).map(([id,value])=>[id,{value,handlers:{},addEventListener(name,fn){this.handlers[name]=fn;}}]));
+  elements[c.result]={textContent:''};
+  runInNewContext(script,{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number,Math});
+  for(const expected of c.expected)assert.ok(elements[c.result].textContent.includes(expected),c.file+' expected '+expected+' but got '+elements[c.result].textContent);
+  elements[c.invalid].value=c.invalid==='mesh-months'?'0':'31';
+  elements[c.invalid].handlers.input();
+  assert.match(elements[c.result].textContent,/Enter/);
+ }
+});
