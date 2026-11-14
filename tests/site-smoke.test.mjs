@@ -188,3 +188,18 @@ test('monitor guide includes original setup and compatibility comparison',()=>{
  assert.match(html,/computer display limits/i);
  assert.match(html,/Research transparency:/);
 });
+
+test('portable SSD capacity planner estimates future needs and validates headroom',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const html=read('guide-portable-ssds.html');
+ assert.match(html,/id="ssd-capacity-planner"/);
+ const start=html.indexOf('<script>(function(){',html.indexOf('id="ssd-capacity-planner"')),end=html.indexOf('</script>',start);
+ assert.ok(start>=0&&end>start);
+ const defaults={'ssd-current-gb':'500','ssd-growth-gb':'150','ssd-years':'3','ssd-headroom':'20'};
+ const elements=Object.fromEntries(Object.entries(defaults).map(([id,value])=>[id,{value,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}}]));
+ elements['ssd-capacity-result']={textContent:''};
+ runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number});
+ assert.ok(elements['ssd-capacity-result'].textContent.includes('1,187.5 GB')||elements['ssd-capacity-result'].textContent.includes('1187.5 GB'));
+ elements['ssd-headroom'].value='100';elements['ssd-headroom'].handlers.input();
+ assert.match(elements['ssd-capacity-result'].textContent,/Enter non-negative/);
+});
