@@ -164,3 +164,19 @@ test('coffee ownership tool calculates multi-year costs and rejects invalid inpu
  elements['coffee-years'].value='0';elements['coffee-years'].handlers.input();
  assert.match(elements['coffee-cost-result'].textContent,/Enter non-negative/);
 });
+
+test('drip coffee filter worksheet computes real totals and validates inputs',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const html=read('guide-coffee-makers.html');
+ assert.match(html,/id="drip-filter-cost-worksheet"/);
+ const start=html.indexOf('<script>(function(){',html.indexOf('id="drip-filter-cost-worksheet"')),end=html.indexOf('</script>',start);
+ assert.ok(start>=0&&end>start);
+ const defaults={'drip-brews-week':'7','drip-years':'2','drip-paper-unit':'0.05','drip-reusable-price':'15','drip-reusable-upkeep':'3'};
+ const elements=Object.fromEntries(Object.entries(defaults).map(([id,value])=>[id,{value,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}}]));
+ elements['drip-filter-result']={textContent:''};
+ runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number,Math});
+ assert.ok(elements['drip-filter-result'].textContent.includes('Paper filters: $36.40'));
+ assert.ok(elements['drip-filter-result'].textContent.includes('Reusable filter: $21.00'));
+ elements['drip-years'].value='0';elements['drip-years'].handlers.input();
+ assert.match(elements['drip-filter-result'].textContent,/Enter non-negative/);
+});
