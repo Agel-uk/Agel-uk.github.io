@@ -79,3 +79,12 @@ test('buyer cost calculators exist and validate prices before comparing',()=>{
   assert.match(html,/hypothetical/i);
  }
 });
+
+test('mesh rental comparison and homepage calculator links exist',()=>{
+ const mesh=read('guide-mesh-wifi.html'),home=read('index.html');
+ assert.match(mesh,/id="mesh-rent-buy-calculator"/);
+ assert.match(mesh,/Number\.isFinite/);
+ assert.match(mesh,/Number\.isInteger/);
+ assert.match(mesh,/addEventListener\('input',calculate\)/);
+ for(const anchor of ['drill-kit-cost-calculator','laptop-ownership-calculator','mesh-rent-buy-calculator'])assert.ok(home.includes('#'+anchor),'missing calculator link: '+anchor);
+});
