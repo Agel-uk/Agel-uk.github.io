@@ -180,3 +180,11 @@ test('drip coffee filter worksheet computes real totals and validates inputs',as
  elements['drip-years'].value='0';elements['drip-years'].handlers.input();
  assert.match(elements['drip-filter-result'].textContent,/Enter non-negative/);
 });
+
+test('monitor guide includes original setup and compatibility comparison',()=>{
+ const html=read('guide-monitors.html');
+ assert.match(html,/id="monitor-connection-checklist"/);
+ assert.match(html,/Single-cable laptop desk/);
+ assert.match(html,/computer display limits/i);
+ assert.match(html,/Research transparency:/);
+});
