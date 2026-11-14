@@ -139,3 +139,11 @@ test('power bank Wh worksheet calculates energy and rejects invalid inputs',asyn
  elements['powerbank-mah'].handlers.input();
  assert.match(elements['powerbank-wh-result'].textContent,/Enter a positive/);
 });
+
+test('air fryer guide includes specific use-case matrix and transparent research limits',()=>{
+ const html=read('guide-air-fryers.html');
+ assert.match(html,/id="airfryer-us-decision-matrix"/);
+ assert.match(html,/Research transparency:/);
+ assert.match(html,/Dual-zone capacity per compartment/);
+ assert.ok(!html.includes('There is no single best air fryers for everyone.'));
+});
