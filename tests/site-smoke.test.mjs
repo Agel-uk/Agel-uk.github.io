@@ -211,3 +211,19 @@ test('headphone guide distinguishes use-case evidence from hypothetical scores',
  assert.match(html,/Research transparency:/);
  assert.match(html,/hypothetical/);
 });
+
+test('tablet ownership worksheet computes costs and rejects invalid years',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const html=read('guide-tablets.html');
+ assert.match(html,/id="tablet-total-cost-planner"/);
+ const start=html.indexOf('<script>(function(){',html.indexOf('id="tablet-total-cost-planner"')),end=html.indexOf('</script>',start);
+ assert.ok(start>=0&&end>start);
+ const defaults={'tablet-basic-device':'300','tablet-basic-accessories':'40','tablet-basic-subscriptions':'0','tablet-work-device':'600','tablet-work-accessories':'220','tablet-work-subscriptions':'60','tablet-ownership-years':'3'};
+ const elements=Object.fromEntries(Object.entries(defaults).map(([id,value])=>[id,{value,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}}]));
+ elements['tablet-cost-result']={textContent:''};
+ runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number,Math});
+ assert.ok(elements['tablet-cost-result'].textContent.includes('Basic setup: $340.00'));
+ assert.ok(elements['tablet-cost-result'].textContent.includes('Productivity setup: $1000.00'));
+ elements['tablet-ownership-years'].value='0';elements['tablet-ownership-years'].handlers.input();
+ assert.match(elements['tablet-cost-result'].textContent,/Enter non-negative/);
+});
