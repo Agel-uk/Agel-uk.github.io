@@ -111,3 +111,11 @@ test('calculator scripts compute correct totals and reject invalid input',async(
   assert.match(elements[c.result].textContent,/Enter/);
  }
 });
+
+test('priority US guides link to identifiable independent evidence sources',()=>{
+ const laptop=read('guide-laptops.html'),drill=read('guide-cordless-drills.html');
+ assert.match(laptop,/id="laptop-independent-references"/);
+ assert.ok(laptop.includes('energystar.gov/productfinder'));
+ assert.match(drill,/id="drill-independent-references"/);
+ assert.ok(drill.includes('osha.gov/hand-power-tools'));
+});
