@@ -134,7 +134,7 @@ test('power bank Wh worksheet calculates energy and rejects invalid inputs',asyn
   'powerbank-wh-result':{textContent:''}
  };
  runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number});
- assert.match(elements['powerbank-wh-result'].textContent,/74\\.00 Wh/);
+ assert.ok(elements['powerbank-wh-result'].textContent.includes('74.00 Wh'));
  elements['powerbank-mah'].value='0';
  elements['powerbank-mah'].handlers.input();
  assert.match(elements['powerbank-wh-result'].textContent,/Enter a positive/);
