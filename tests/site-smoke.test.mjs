@@ -119,3 +119,23 @@ test('priority US guides link to identifiable independent evidence sources',()=>
  assert.match(drill,/id="drill-independent-references"/);
  assert.ok(drill.includes('osha.gov/hand-power-tools'));
 });
+
+test('power bank Wh worksheet calculates energy and rejects invalid inputs',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const html=read('guide-power-banks.html');
+ assert.match(html,/id="power-bank-wh-worksheet"/);
+ assert.ok(html.includes('faa.gov/hazmat/packsafe/lithium-batteries'));
+ const start=html.indexOf('<script>(function(){',html.indexOf('id="power-bank-wh-worksheet"'));
+ const end=html.indexOf('</script>',start);
+ assert.ok(start>=0&&end>start,'inline calculator script missing');
+ const elements={
+  'powerbank-mah':{value:'20000',handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}},
+  'powerbank-voltage':{value:'3.7',handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}},
+  'powerbank-wh-result':{textContent:''}
+ };
+ runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number});
+ assert.ok(elements['powerbank-wh-result'].textContent.includes('74.00 Wh'));
+ elements['powerbank-mah'].value='0';
+ elements['powerbank-mah'].handlers.input();
+ assert.match(elements['powerbank-wh-result'].textContent,/Enter a positive/);
+});
