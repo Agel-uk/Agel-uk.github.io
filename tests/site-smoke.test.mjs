@@ -147,3 +147,20 @@ test('air fryer guide includes specific use-case matrix and transparent research
  assert.match(html,/Dual-zone capacity per compartment/);
  assert.ok(!html.includes('There is no single best air fryers for everyone.'));
 });
+
+test('coffee ownership tool calculates multi-year costs and rejects invalid input',async()=>{
+ const {runInNewContext}=await import('node:vm');
+ const html=read('guide-coffee-machines.html');
+ assert.match(html,/id="coffee-ownership-calculator"/);
+ const start=html.indexOf('<script>(function(){',html.indexOf('id="coffee-ownership-calculator"'));
+ const end=html.indexOf('</script>',start);
+ assert.ok(start>=0&&end>start);
+ const defaults={'coffee-pod-machine':'120','coffee-pod-drink':'0.85','coffee-pod-maintenance':'20','coffee-ground-machine':'250','coffee-ground-drink':'0.35','coffee-ground-maintenance':'35','coffee-drinks-day':'2','coffee-years':'3'};
+ const elements=Object.fromEntries(Object.entries(defaults).map(([id,value])=>[id,{value,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}}]));
+ elements['coffee-cost-result']={textContent:''};
+ runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number,Math});
+ assert.ok(elements['coffee-cost-result'].textContent.includes('Capsule machine: $2041.50'));
+ assert.ok(elements['coffee-cost-result'].textContent.includes('Ground-coffee machine: $1121.50'));
+ elements['coffee-years'].value='0';elements['coffee-years'].handlers.input();
+ assert.match(elements['coffee-cost-result'].textContent,/Enter non-negative/);
+});
