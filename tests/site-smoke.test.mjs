@@ -98,7 +98,7 @@ test('calculator scripts compute correct totals and reject invalid input',async(
  ];
  for(const c of cases){
   const html=read(c.file);
-  const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]);
+  const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
   const script=scripts.find(s=>s.includes("addEventListener('input',calculate)"));
   assert.ok(script,c.file+' calculator script missing');
   const elements=Object.fromEntries(Object.entries(c.inputs).map(([id,value])=>[id,{value,handlers:{},addEventListener(name,fn){this.handlers[name]=fn;}}]));
