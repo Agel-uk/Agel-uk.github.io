@@ -203,3 +203,11 @@ test('portable SSD capacity planner estimates future needs and validates headroo
  elements['ssd-headroom'].value='100';elements['ssd-headroom'].handlers.input();
  assert.match(elements['ssd-capacity-result'].textContent,/Enter non-negative/);
 });
+
+test('headphone guide distinguishes use-case evidence from hypothetical scores',()=>{
+ const html=read('guide-wireless-headphones.html');
+ assert.match(html,/id="headphones-us-decision-matrix"/);
+ assert.match(html,/Independent microphone recordings/);
+ assert.match(html,/Research transparency:/);
+ assert.match(html,/hypothetical/);
+});
