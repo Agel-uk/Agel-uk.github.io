@@ -227,3 +227,30 @@ test('tablet ownership worksheet computes costs and rejects invalid years',async
  elements['tablet-ownership-years'].value='0';elements['tablet-ownership-years'].handlers.input();
  assert.match(elements['tablet-cost-result'].textContent,/Enter non-negative/);
 });
+
+test('all sixteen guides have unique titles, clear affiliate disclosures and no invented test claims',()=>{
+ const titles=new Set();
+ for(const slug of guides){
+  const file='guide-'+slug+'.html',html=read(file);
+  const title=html.match(/<title>([^<]+)<\/title>/i);
+  assert.ok(title&&title[1].trim().length>12,file+' missing meaningful title');
+  assert.ok(!titles.has(title[1].trim()),file+' duplicate title');
+  titles.add(title[1].trim());
+  assert.match(html,/affiliate (?:link|disclosure)|affiliate-comparison|affiliate links/i,file+' missing affiliate disclosure');
+  assert.match(html,/rel=["'][^"']*sponsored/i,file+' retailer link missing sponsored relation');
+  assert.ok(!/we (?:personally )?(?:tested|reviewed hands-on) (?:all|these) products/i.test(html),file+' unsupported blanket hands-on claim');
+ }
+});
+test('calculator scripts remain closed before guide content and use unique output IDs',()=>{
+ const outputs=new Set();
+ for(const slug of guides){
+  const file='guide-'+slug+'.html',html=read(file);
+  const count=(html.match(/<script\b/gi)||[]).length,closed=(html.match(/<\/script>/gi)||[]).length;
+  assert.equal(count,closed,file+' unbalanced script tags');
+  for(const m of html.matchAll(/<p\b[^>]*\brole=["']status["'][^>]*\bid=["']([^"']+)["']/gi)){
+   assert.ok(!outputs.has(m[1]),file+' duplicate calculator output ID '+m[1]);
+   outputs.add(m[1]);
+  }
+  assert.ok(html.includes('</article>'),file+' article closing tag missing');
+ }
+});
