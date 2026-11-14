@@ -69,3 +69,13 @@ test('US drill buyer journey has working local steps and disclosed tracked retai
  assert.match(analytics,/retailer_outbound_click/);
  assert.match(analytics,/affiliate_tag_present/);
 });
+
+test('buyer cost calculators exist and validate prices before comparing',()=>{
+ for(const [path,prefix] of [['guide-cordless-drills.html','drill'],['guide-laptops.html','laptop']]){
+  const html=read(path);
+  assert.match(html,new RegExp('id="'+(prefix==='drill'?'drill-kit-cost-calculator':'laptop-ownership-calculator')+'"'));
+  assert.match(html,/Number\.isFinite/);
+  assert.match(html,/addEventListener\('input',calculate\)/);
+  assert.match(html,/hypothetical/i);
+ }
+});
