@@ -1,132 +1,388 @@
-const MARKETS = [
-  ['US','United States','USD','amazon.com'],['AE','United Arab Emirates','AED','amazon.ae'],['SA','Saudi Arabia','SAR','amazon.sa'],['CA','Canada','CAD','amazon.ca'],['MX','Mexico','MXN','amazon.com.mx'],['BR','Brazil','BRL','amazon.com.br'],
-  ['UK','United Kingdom','GBP','amazon.co.uk'],['DE','Germany','EUR','amazon.de'],['FR','France','EUR','amazon.fr'],['IT','Italy','EUR','amazon.it'],['ES','Spain','EUR','amazon.es'],
-  ['NL','Netherlands','EUR','amazon.nl'],['SE','Sweden','SEK','amazon.se'],['PL','Poland','PLN','amazon.pl'],['IN','India','INR','amazon.in'],['JP','Japan','JPY','amazon.co.jp'],
-  ['SG','Singapore','SGD','amazon.sg'],['AU','Australia','AUD','amazon.com.au']
-];
-const TAGS = window.DEALLENS_AFFILIATE_TAGS || {};
-const demo = [
-  {name:"Wireless Headphones",query:"wireless headphones",guide:"guide-wireless-headphones.html"},
-  {name:"Smart Watches",query:"smart watches",guide:"guide-smart-watches.html"},
-  {name:"Running Shoes",query:"running shoes",guide:"guide-running-shoes.html"},
-  {name:"Power Banks",query:"usb c power bank",guide:"guide-power-banks.html"},
-  {name:"Robot Vacuums",query:"robot vacuum cleaner",guide:"guide-robot-vacuums.html"},
-  {name:"Air Fryers",query:"air fryer",guide:"guide-air-fryers.html"},
-  {name:"Laptops",query:"laptops",guide:"guide-laptops.html"},
-  {name:"Mesh Wi-Fi",query:"mesh wifi system",guide:"guide-mesh-wifi.html"},
-  {name:"Portable SSDs",query:"portable ssd",guide:"guide-portable-ssds.html"},
-  {name:"Office Chairs",query:"ergonomic office chair",guide:"guide-office-chairs.html"},
-  {name:"Monitors",query:"computer monitor",guide:"guide-monitors.html"},
-  {name:"Tablets",query:"tablet computer",guide:"guide-tablets.html"},
-  {name:"Coffee Makers",query:"coffee maker",guide:"guide-coffee-makers.html"},
-  {name:"Coffee Machines",query:"espresso machine",guide:"guide-coffee-machines.html"},
-  {name:"Carry-on Luggage",query:"carry on luggage",guide:"guide-carry-on-luggage.html"},
-  {name:"Cordless Drills",query:"cordless drill",guide:"guide-cordless-drills.html"}
-];
-const $ = id => document.getElementById(id);
-const marketSelect=$('market'), currency=$('currency'), q=$('q'), results=$('results');
-function marketByCode(code){return MARKETS.find(m=>m[0]===code)||MARKETS[0]}
-function preferredMarket(){
-  let saved=null;try{saved=localStorage.getItem('deallens_market')}catch{} if(saved&&MARKETS.some(m=>m[0]===saved)) return saved;
-  return 'US';
-}
-function marketOptions(){return MARKETS.map(m=>`<option value="${m[0]}">${m[1]} — ${m[2]}</option>`).join('')}
-if(marketSelect){marketSelect.innerHTML=marketOptions();marketSelect.value=preferredMarket();}
-function syncCurrency(){if(!marketSelect)return;const m=marketByCode(marketSelect.value);if(currency)currency.value=m[2];try{localStorage.setItem('deallens_market',m[0])}catch{};$('affiliateState')?.replaceChildren(document.createTextNode(TAGS[m[0]]?'Affiliate link active for this market':'Standard retailer link — affiliate not activated for this market'));}
-function amazonSearchUrl(query){const m=marketByCode(marketSelect?.value||'US');const url=new URL(`https://www.${m[3]}/s`);url.searchParams.set('k',query);if(TAGS[m[0]])url.searchParams.set('tag',TAGS[m[0]]);return url.toString()}
-function trackOutbound(query){try{const k='deallens_outbound_clicks';const data=JSON.parse(localStorage.getItem(k)||'[]');data.push({query,market:marketSelect?.value||'US',affiliate:Boolean(TAGS[marketSelect?.value||'US']),at:new Date().toISOString()});localStorage.setItem(k,JSON.stringify(data.slice(-500)));}catch{}}
-function render(items){if(!results)return;results.innerHTML=items.map(x=>`<article class="card"><div class="score">DEALLENS BUYING GUIDE</div><h3>${x.name}</h3><p>Review the buying criteria, then compare current products, sellers, delivery and prices on the selected marketplace.</p><div class="card-actions"><a class="btn" href="${x.guide}">Read guide</a><a class="btn primary" rel="${TAGS[marketSelect?.value||'US']?'sponsored ':''}nofollow noopener" target="_blank" href="${amazonSearchUrl(x.query)}" data-query="${x.query}">View current offers</a></div><small>${TAGS[marketSelect?.value||'US']?'Paid affiliate link. DealLens may earn from qualifying purchases.':'No DealLens affiliate tag is active for this market yet.'}</small></article>`).join('');results.querySelectorAll('[data-query]').forEach(a=>a.addEventListener('click',()=>trackOutbound(a.dataset.query)));}
-const SEARCH_ALIASES = {
-  'guide-wireless-headphones.html':'earbuds headset noise cancelling anc bluetooth calls',
-  'guide-robot-vacuums.html':'robotic vacuum pet hair cleaning mop',
-  'guide-mesh-wifi.html':'wireless router internet coverage networking',
-  'guide-laptops.html':'work school notebook computer macbook windows',
-  'guide-power-banks.html':'portable charger battery usb c travel',
-  'guide-portable-ssds.html':'external hard drive storage backup',
-  'guide-smart-watches.html':'smartwatch fitness wearable',
-  'guide-air-fryers.html':'air fryer cooking kitchen',
-  'guide-running-shoes.html':'sneakers trainers jogging',
-  'guide-coffee-makers.html':'drip coffee brewing',
-  'guide-coffee-machines.html':'espresso cappuccino coffee',
-  'guide-office-chairs.html':'desk chair ergonomic work',
-  'guide-monitors.html':'display screen gaming office',
-  'guide-tablets.html':'ipad android tablet',
-  'guide-carry-on-luggage.html':'suitcase cabin bag travel',
-  'guide-cordless-drills.html':'power drill diy tools'
-};
-let showAllGuides=false;
-function search(){
-  const raw=(q?.value||'').trim().toLowerCase();
-  const terms=raw.split(/\s+/).filter(Boolean);
-  const ranked=demo.map((x,i)=>{
-    const name=x.name.toLowerCase(), query=x.query.toLowerCase(), aliases=SEARCH_ALIASES[x.guide]||'';
-    const score=terms.reduce((sum,term)=>{
-      if(name===term)return sum+12;
-      if(name.includes(term))return sum+8;
-      if(query.includes(term))return sum+5;
-      if(aliases.split(/\s+/).some(word=>word===term||word.startsWith(term)))return sum+2;
-      return sum-100;
-    },0);
-    return {x,i,score};
-  }).filter(x=>!terms.length||x.score>=0).sort((a,b)=>b.score-a.score||a.i-b.i);
-  const visible=(!raw&&!showAllGuides)?ranked.slice(0,6):ranked;
-  render(visible.map(x=>x.x));
-  const more=$('showAllGuides');if(more){more.hidden=Boolean(raw)||ranked.length<=6||showAllGuides;more.textContent=`Show all ${ranked.length} buying guides`;}
-  const count=$('resultCount');
-  if(count)count.textContent=(!raw&&!showAllGuides&&ranked.length>6)?`Showing 6 of ${ranked.length} buying guides`:(ranked.length===1?'1 matching buying guide':`${ranked.length} matching buying guides`);
-  if(results&&!ranked.length)results.innerHTML='<p role="status">No matching buying guides. Try a shorter term, such as laptop, coffee, or vacuum, or browse all 16 guides.</p>';
-}
-$('searchBtn')?.addEventListener('click',search);q?.addEventListener('keydown',e=>{if(e.key==='Enter')search()});q?.addEventListener('input',search);$('showAllGuides')?.addEventListener('click',()=>{showAllGuides=true;search();});document.querySelectorAll('[data-guide-search]').forEach(button=>button.addEventListener('click',()=>{if(!q)return;q.value=button.dataset.guideSearch;search();q.focus();}));marketSelect?.addEventListener('change',()=>{syncCurrency();search();updateOfferLinks()});currency?.addEventListener('change',search);
-syncCurrency();search();
-const photo=$('photo'),preview=$('preview');photo?.addEventListener('change',()=>{const f=photo.files?.[0];if(f){preview.src=URL.createObjectURL(f);preview.hidden=false;}});
-$('listingBtn')?.addEventListener('click',()=>{const n=$('sellName').value.trim()||'Product';const c=$('condition').value;$('listing').textContent=`${n}\nCondition: ${c}\n\nSuggested title: ${n} — ${c}\nDescription: ${n} offered in ${c.toLowerCase()} condition. Confirm specifications, defects, delivery and warranty before publishing.\n\nAI image recognition is not enabled until an approved server-side AI provider is connected.`});
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 
-// Deep-link search and guide offer buttons.
-const params = new URLSearchParams(location.search);
-if (q && params.get('search')) { q.value = params.get('search'); search(); }
-document.querySelectorAll('.offer-link[data-query]').forEach(a => {
-  const query = a.dataset.query;
-  a.href = amazonSearchUrl(query);
-  a.target = '_blank';
-  a.rel = (TAGS[marketSelect?.value||'US'] ? 'sponsored ' : '') + 'nofollow noopener';
-  a.addEventListener('click', () => trackOutbound(query));
+"use strict";
+
+// DealLens AI — marketplace search and buying guides.
+// Affiliate IDs are configured in affiliate-config.js.
+// Only markets explicitly enabled in affiliate-config.js receive tags; this does not establish account approval.
+
+const MARKETS = [
+  ["AE", "United Arab Emirates", "AED", "amazon.ae"],
+  ["SA", "Saudi Arabia", "SAR", "amazon.sa"],
+  ["US", "United States", "USD", "amazon.com"],
+  ["CA", "Canada", "CAD", "amazon.ca"],
+  ["MX", "Mexico", "MXN", "amazon.com.mx"],
+  ["BR", "Brazil", "BRL", "amazon.com.br"],
+  ["UK", "United Kingdom", "GBP", "amazon.co.uk"],
+  ["DE", "Germany", "EUR", "amazon.de"],
+  ["FR", "France", "EUR", "amazon.fr"],
+  ["IT", "Italy", "EUR", "amazon.it"],
+  ["ES", "Spain", "EUR", "amazon.es"],
+  ["NL", "Netherlands", "EUR", "amazon.nl"],
+  ["SE", "Sweden", "SEK", "amazon.se"],
+  ["PL", "Poland", "PLN", "amazon.pl"],
+  ["IN", "India", "INR", "amazon.in"],
+  ["JP", "Japan", "JPY", "amazon.co.jp"],
+  ["SG", "Singapore", "SGD", "amazon.sg"],
+  ["AU", "Australia", "AUD", "amazon.com.au"]
+];
+
+const TAGS = window.DEALLENS_ACTIVE_AFFILIATE_TAGS || {};
+
+const guides = [
+  ["Air Fryers", "air fryer", "guide-air-fryers.html"],
+  ["Carry-On Luggage", "carry on luggage", "guide-carry-on-luggage.html"],
+  ["Coffee Machines", "espresso machine", "guide-coffee-machines.html"],
+  ["Coffee Makers", "coffee maker", "guide-coffee-makers.html"],
+  ["Cordless Drills", "cordless drill", "guide-cordless-drills.html"],
+  ["Laptops", "laptop computer", "guide-laptops.html"],
+  ["Mesh Wi-Fi", "mesh wifi router", "guide-mesh-wifi.html"],
+  ["Monitors", "computer monitor", "guide-monitors.html"],
+  ["Office Chairs", "office chair", "guide-office-chairs.html"],
+  ["Portable SSDs", "portable ssd", "guide-portable-ssds.html"],
+  ["Power Banks", "power bank usb c", "guide-power-banks.html"],
+  ["Robot Vacuums", "robot vacuum cleaner", "guide-robot-vacuums.html"],
+  ["Running Shoes", "running shoes", "guide-running-shoes.html"],
+  ["Smart Watches", "smart watch", "guide-smart-watches.html"],
+  ["Tablets", "tablet computer", "guide-tablets.html"],
+  ["Wireless Headphones", "wireless headphones", "guide-wireless-headphones.html"]
+].map(([name, query, guide]) => ({ name, query, guide }));
+
+const $ = id => document.getElementById(id);
+
+const marketSelect = $("market");
+const currency = $("currency");
+const q = $("q");
+const results = $("results");
+
+function marketByCode(code) {
+  return MARKETS.find(m => m[0] === code)
+    || MARKETS.find(m => m[0] === "US");
+}
+
+function preferredMarket() {
+  try {
+    const saved = localStorage.getItem("deallens_market");
+
+    if (saved && MARKETS.some(m => m[0] === saved)) {
+      return saved;
+    }
+  } catch (_) {}
+
+  return "US";
+}
+
+function marketOptions() {
+  return MARKETS.map(
+    m => `<option value="${m[0]}">${m[1]} — ${m[2]}</option>`
+  ).join("");
+}
+
+if (marketSelect) {
+  marketSelect.innerHTML = marketOptions();
+  marketSelect.value = preferredMarket();
+}
+
+// Respect the previously selected market on guide pages.
+function selectedMarket() {
+  return marketByCode(marketSelect?.value || preferredMarket());
+}
+
+function hasAffiliateTag() {
+  const code = selectedMarket()[0];
+
+  return typeof TAGS[code] === "string"
+    && TAGS[code].trim().length > 0;
+}
+
+function syncCurrency() {
+  const market = selectedMarket();
+
+  if (currency) {
+    currency.value = market[2];
+  }
+
+  if (marketSelect) {
+    try {
+      localStorage.setItem("deallens_market", market[0]);
+    } catch (_) {}
+  }
+
+  const state = $("affiliateState");
+
+  if (state) {
+    state.textContent = hasAffiliateTag()
+      ? "Paid affiliate links may earn DealLens a commission from qualifying purchases."
+      : "Standard retailer links — no DealLens affiliate tracking for this market.";
+  }
+}
+
+function amazonSearchUrl(query) {
+  const market = selectedMarket();
+
+  const url = new URL(`https://www.${market[3]}/s`);
+
+  url.searchParams.set("k", String(query || "").trim());
+
+  const tag = TAGS[market[0]];
+
+  if (typeof tag === "string" && tag.trim()) {
+    url.searchParams.set("tag", tag.trim());
+  }
+
+  return url.toString();
+}
+
+function trackOutbound(query) {
+  // Browser-local activity only, not central analytics.
+  try {
+    const key = "deallens_outbound_clicks";
+    const stored = JSON.parse(localStorage.getItem(key) || "[]");
+
+    if (!Array.isArray(stored)) return;
+
+    stored.push({
+      query: String(query || ""),
+      market: selectedMarket()[0],
+      affiliate: hasAffiliateTag(),
+      at: new Date().toISOString()
+    });
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(stored.slice(-500))
+    );
+  } catch (_) {}
+}
+
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    ch => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[ch])
+  );
+}
+
+function affiliateRel() {
+  return hasAffiliateTag()
+    ? "sponsored nofollow noopener"
+    : "nofollow noopener";
+}
+
+function offerButton(query) {
+  const url = escapeHtml(amazonSearchUrl(query));
+  const safeQuery = escapeHtml(query);
+
+  return `
+    <a
+      class="btn primary"
+      rel="${affiliateRel()}"
+      target="_blank"
+      href="${url}"
+      data-query="${safeQuery}"
+    >View current offers</a>
+  `;
+}
+
+function wireOutboundLinks(container) {
+  if (!container) return;
+
+  container.querySelectorAll("a[data-query]").forEach(link => {
+    if (link.dataset.deallensTracked === "yes") return;
+
+    link.addEventListener("click", () => {
+      trackOutbound(link.dataset.query);
+    });
+
+    link.dataset.deallensTracked = "yes";
+  });
+}
+
+function render(items, customQuery = "") {
+  if (!results) return;
+
+  const cards = items.map(item => `
+    <article class="card">
+      <div class="score">DEALLENS BUYING GUIDE</div>
+
+      <h3>${escapeHtml(item.name)}</h3>
+
+      <p>
+        Review the buying criteria, then compare
+        current products, sellers, delivery and
+        prices on the selected marketplace.
+      </p>
+
+      <div class="card-actions">
+        <a class="btn" href="${escapeHtml(item.guide)}">
+          Read guide
+        </a>
+
+        ${offerButton(item.query)}
+      </div>
+
+      <small>
+        ${
+          hasAffiliateTag()
+            ? "Paid affiliate link. DealLens may earn from qualifying purchases."
+            : "No DealLens affiliate tag is active for this market yet."
+        }
+      </small>
+    </article>
+  `);
+
+  if (customQuery) {
+    cards.unshift(`
+      <article class="card">
+        <div class="score">MARKETPLACE SEARCH</div>
+
+        <h3>Search: ${escapeHtml(customQuery)}</h3>
+
+        <p>
+          Open current retailer results for your exact
+          search. DealLens does not display live prices
+          or verify individual listings.
+        </p>
+
+        <div class="card-actions">
+          ${offerButton(customQuery)}
+        </div>
+
+        <small>
+          ${
+            hasAffiliateTag()
+              ? "Paid affiliate link. DealLens may earn from qualifying purchases."
+              : "Standard retailer link; no DealLens affiliate tag for this market."
+          }
+        </small>
+      </article>
+    `);
+  }
+
+  results.innerHTML = cards.join("");
+
+  wireOutboundLinks(results);
+}
+
+function search() {
+  const term = (q?.value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 180);
+
+  if (!term) {
+    render(guides);
+    return;
+  }
+
+  const normalized = term.toLowerCase();
+
+  const matches = guides.filter(item =>
+    item.name.toLowerCase().includes(normalized)
+    || item.query.toLowerCase().includes(normalized)
+  );
+
+  render(matches, term);
+}
+
+function refreshGuideOfferLinks() {
+  document.querySelectorAll(".offer-link[data-query]")
+    .forEach(link => {
+      const query = link.dataset.query;
+
+      if (!query) return;
+
+      link.href = amazonSearchUrl(query);
+      link.target = "_blank";
+      link.rel = affiliateRel();
+
+      if (link.dataset.deallensTracked !== "yes") {
+        link.addEventListener("click", () => {
+          trackOutbound(link.dataset.query);
+        });
+
+        link.dataset.deallensTracked = "yes";
+      }
+    });
+}
+
+$("searchBtn")?.addEventListener("click", search);
+
+q?.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    search();
+  }
 });
 
-// Keep editorial guide outbound links aligned with the selected marketplace.
-function updateOfferLinks(){document.querySelectorAll('.offer-link[data-query]').forEach(a=>{a.href=amazonSearchUrl(a.dataset.query);a.rel=(TAGS[marketSelect?.value||'US']?'sponsored ':'')+'nofollow noopener';});}
+marketSelect?.addEventListener("change", () => {
+  syncCurrency();
+  search();
+  refreshGuideOfferLinks();
+});
 
+currency?.addEventListener("change", search);
 
-// Contextual, non-affiliate next step on editorial guide pages.
-(function addDecisionLabNextStep(){
-  const categoryByGuide={
-    'guide-wireless-headphones.html':'headphones',
-    'guide-smart-watches.html':'watches',
-    'guide-running-shoes.html':'shoes',
-    'guide-power-banks.html':'powerbanks',
-    'guide-robot-vacuums.html':'vacuums',
-    'guide-air-fryers.html':'airfryers',
-    'guide-laptops.html':'laptops',
-    'guide-mesh-wifi.html':'mesh',
-    'guide-portable-ssds.html':'ssds',
-    'guide-office-chairs.html':'chairs',
-    'guide-monitors.html':'monitors',
-    'guide-tablets.html':'tablets',
-    'guide-coffee-makers.html':'coffee',
-    'guide-coffee-machines.html':'coffee',
-    'guide-carry-on-luggage.html':'luggage',
-    'guide-cordless-drills.html':'drills'
-  };
-  const path=location.pathname.split('/').pop();
-  const category=categoryByGuide[path];
-  const main=document.querySelector('main');
-  if(!category||!main||document.getElementById('guide-decision-next'))return;
-  const section=document.createElement('section');
-  section.className='panel guide-next-step';
-  section.id='guide-decision-next';
-  const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='YOUR NEXT STEP';
-  const heading=document.createElement('h2');heading.textContent='Compare your shortlisted products';
-  const copy=document.createElement('p');copy.textContent='Use the free Decision Lab to weight features, enter verified ratings and estimate costs for up to three options. No live prices or product testing are claimed.';
-  const link=document.createElement('a');link.className='btn primary';link.href='decision-lab.html?category='+encodeURIComponent(category);link.textContent='Compare options in Decision Lab';
-  section.append(eyebrow,heading,copy,link);main.append(section);
-})();
+syncCurrency();
+search();
+
+// Product image preview.
+const photo = $("photo");
+const preview = $("preview");
+
+photo?.addEventListener("change", () => {
+  const file = photo.files?.[0];
+
+  if (!file || !preview) return;
+
+  if (preview.dataset.objectUrl) {
+    URL.revokeObjectURL(preview.dataset.objectUrl);
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  preview.src = objectUrl;
+  preview.dataset.objectUrl = objectUrl;
+  preview.hidden = false;
+});
+
+// Basic listing description generator.
+$("listingBtn")?.addEventListener("click", () => {
+  const nameField = $("sellName");
+  const conditionField = $("condition");
+  const listing = $("listing");
+
+  if (!listing) return;
+
+  const name = nameField?.value.trim() || "Product";
+  const condition = conditionField?.value || "Not specified";
+
+  listing.textContent =
+    `${name}\n` +
+    `Condition: ${condition}\n\n` +
+    `Suggested title: ${name} — ${condition}\n` +
+    `Description: ${name} offered in ${condition.toLowerCase()} condition. ` +
+    `Confirm specifications, defects, delivery and warranty before publishing.\n\n` +
+    `AI image recognition is not enabled until an approved server-side AI provider is connected.`;
+});
+
+// Service worker registration.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+
+// Read optional search query from URL.
+const params = new URLSearchParams(location.search);
+
+if (q && params.get("search")) {
+  q.value = params.get("search").slice(0, 180);
+  search();
+}
+
+// Update marketplace links inside buying guides.
+refreshGuideOfferLinks();
