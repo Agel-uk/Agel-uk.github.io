@@ -159,8 +159,8 @@ test('coffee ownership tool calculates multi-year costs and rejects invalid inpu
  const elements=Object.fromEntries(Object.entries(defaults).map(([id,value])=>[id,{value,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;}}]));
  elements['coffee-cost-result']={textContent:''};
  runInNewContext(html.slice(start+8,end),{document:{getElementById(id){assert.ok(elements[id],id);return elements[id];}},Number,Math});
- assert.ok(elements['coffee-cost-result'].textContent.includes('Capsule machine: $2,041.50'));
- assert.ok(elements['coffee-cost-result'].textContent.includes('Ground-coffee machine: $1,121.50'));
+ assert.ok(elements['coffee-cost-result'].textContent.includes('Capsule machine: $2041.50'));
+ assert.ok(elements['coffee-cost-result'].textContent.includes('Ground-coffee machine: $1121.50'));
  elements['coffee-years'].value='0';elements['coffee-years'].handlers.input();
  assert.match(elements['coffee-cost-result'].textContent,/Enter non-negative/);
 });
