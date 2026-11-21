@@ -2,7 +2,7 @@
 // DealLens AI — Service Worker
 // Cache only successful same-origin GET responses.
 
-const CACHE = 'deallens-v10-20261019';
+const CACHE = 'deallens-v11-20261121';
 
 const ASSETS = [
   './',
@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
 
   // Do not intercept external services or other site paths.
   if (url.origin !== self.location.origin) return;
-  if (!url.pathname.startsWith('/deallens-ai/')) return;
+  if (!url.pathname.startsWith(self.registration.scope.replace(self.location.origin, ''))) return;
 
   // Always request fresh HTML navigation when online.
   // Never cache sitemap.xml or robots.txt.
