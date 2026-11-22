@@ -91,3 +91,25 @@ test('total cost calculator performs real calculations',()=>{
   assert.equal(el.total.textContent,'$279.60');
   assert.equal(el['out-recurring'].textContent,'$120.00');
 });
+
+
+test('homepage guide cards keep comparison actions in the same responsive grid item',()=>{
+  const home=read('index.html');
+  const items=[...home.matchAll(/<div class="guide-item">([\s\S]*?)<\/div>/g)];
+  assert.equal(items.length,16,'expected sixteen unified guide cards');
+  for(const item of items){
+    assert.match(item[1],/<a class="guide"[^>]*href="guide-[^"]+\.html"/);
+    assert.match(item[1],/<a class="compare-link"[^>]*href="decision-lab\.html\?category=[^"]+"/);
+  }
+  assert.match(home,/\.guide-item\[hidden\]\{display:none!important\}/);
+  assert.match(home,/closest\('\.guide-item'\)\.hidden=!ok/);
+});
+
+test('US affiliate configuration and consent-based click measurement are present',()=>{
+  const affiliate=read('affiliate-config.js');
+  const analytics=read('analytics.js');
+  assert.match(affiliate,/deallensai-20/);
+  assert.match(analytics,/G-J09RWN8FZX/);
+  assert.match(analytics,/retailer_outbound_click/);
+  assert.match(analytics,/deallens_analytics_consent_v1/);
+});
